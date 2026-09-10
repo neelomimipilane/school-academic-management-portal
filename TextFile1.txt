@@ -1,0 +1,528 @@
+: School Management & Academic Information Web Portal 
+1. Introduction 
+Educational institutions deal with vast quantities of academic information such as student records, attendance data, assessment marks, examination results, and report cards. In a great many schools, manual methods or separate systems lead to inefficiencies, delays, and problems when it comes to obtaining accurate information. Teachers need efficient means of recording attendance and marks, and administrators must have reliable ways of reviewing and publishing academic results. Likewise, students and parents also need easy access to academic information and performance reports. 
+ 
+To deal with these challenges, the project suggests the creation of a School Management and Academic Information Web Portal. The system will offer a central platform which allows schools to securely and efficiently manage their academic information. The portal will provide access to Ministry Administrators, School Administrators, Teachers, Students and Parents by means of role-based access control and secure authentication. 
+ 
+The frontend will be developed with React, the backend services will use Spring Boot and the database will be managed with PostgreSQL. The suggested solution is intended to improve the management of academic information, enhance communication between the various stakeholders, and ensure secure access to educational records. This report looks at the relevant existing literature, carries out a system analysis and design, describes the implementation process, details the testing activities, and presents the conclusions from the project.
+
+BACKGROUND LITERATURE
+Problem Statement
+The effective management of student’s academic information is an important part of ensuring that schools can monitor student progress, support timely decision-making, and maintain communication between key education stakeholders. However, the management of academic information in secondary schools can still be affected by reliance on manual and fragmented processes. Nkata (2020) found that the majority of secondary schools examined in the Arusha Region relied on manual systems for reporting students’ academic progress and administering academic activities. The study reported that such practices limited the timely collection and dissemination of academic information and did not adequately support parental involvement in monitoring students’ progress. In the study, 98.3% of the surveyed secondary schools used manual systems, while only 1.7% used a combination of manual methods and office applications such as Microsoft Excel.
+Although School Information Systems have been introduced to improve the management of student information, the availability of a digital system does not necessarily guarantee effective use. Luchagula (2025) highlights that schools can continue to experience difficulties in using School Information Systems because of inadequate ICT infrastructure, unreliable connectivity, limited teacher training, technical difficulties and underutilization of available system functionalities. These challenges can create a gap between the intended benefits of digital academic information systems and their actual use in schools.
+These findings suggest that the challenge extends beyond the replacement of paper-based records with digital technology. There is a need for an academic information management approach that enables information to be captured, maintained and accessed efficiently while also supporting communication among the different stakeholders involved in a student's education. In particular, teachers require timely access to academic information for monitoring student progress, school administrators require reliable information for managing school activities and generating reports, parents require appropriate access to information about their children's progress, and education authorities require consolidated information to support monitoring and decision-making.
+Therefore, the problem addressed by this study is the difficulty of efficiently managing, monitoring and communicating students’ academic information within secondary schools due to reliance on manual or fragmented processes and limitations in the effective use of existing information systems. This creates a need for a more integrated academic information management system that can support schools in managing academic records and attendance, monitoring student progress, generating reports, and facilitating communication between schools, parents, students and education authorities.
+
+
+
+Research Gap
+Previous studies have established the potential of information systems to improve the management of students’ academic information. Nkata (2020) identified limitations associated with manual academic information management in secondary schools, particularly in the collection and dissemination of information and the involvement of parents in monitoring students’ academic progress. Luchagula (2025), meanwhile, examined the use of School Information Systems and found that, despite their perceived usefulness, factors such as inadequate training, unreliable infrastructure, limited professional development and insufficient follow-up can affect their effective use.
+In practice, existing academic platforms such as BAC’s Gradebook demonstrate how digital systems can be used to manage academic information and reduce some of the limitations associated with manual record keeping. However, such platforms primarily address particular aspects of academic information management rather than the broader information flow between the different stakeholders involved in secondary education.
+The literature and existing systems therefore reveal an opportunity to move beyond the digitization of individual academic processes towards a more integrated approach. There is a need for a system that brings together academic records and grade management with attendance tracking, academic reporting, student progress monitoring and communication with parents and students, while also providing appropriate access to school administrators and education authorities.
+This study seeks to address this gap by proposing an integrated academic information management system for junior and senior secondary schools. Rather than focusing solely on replacing manual records or providing an electronic gradebook, the proposed system will consider the wider academic information lifecycle from the recording of assessment and attendance by teachers, through school-level administration and reporting, to the controlled dissemination of relevant information to students, parents and the Ministry of Child Welfare and Basic Education. This integrated approach is intended to provide a more coordinated way of managing academic information across multiple levels of the secondary-school environment.
+
+
+
+
+
+
+
+
+
+BAC Gradebook
+ 
+Figure 1: A real time screenshot of the gradebook BAC dashboard. A user can see their information only and cannot access another student’s information
+
+ 
+Figure 2: Showing the results of the logged in student and a student can download their reports/ results slip on my results tab.
+
+ 
+Figure 3: Gradebook attendance interface showing module selection and attendance session status for a logged-in student.
+
+
+
+
+
+
+
+Assessment and Grade Calculation
+Assessment and grade calculation are important functions of an academic information management system. The system should support the assessment components and weighting requirements prescribed by the Botswana Examinations Council (BEC), where applicable. BEC uses weighted component scores to determine syllabus grades and applies specified criteria when determining overall qualification grades. Therefore, the proposed system should be designed so that assessment components, weightings and grading rules can be configured according to the relevant BEC requirements rather than being independently determined by the system.
+
+User Scenarios & Testing (mandatory)
+User Story 1 – School Administrator Defines Grading Scale (Priority: P1)
+A school administrator sets up the grading boundaries and letter-grade mappings that will govern how numeric scores are translated into letter grades across all courses and reporting periods.
+Why this priority: Every downstream feature — grade recording, aggregation, and report-card generation — depends on a correctly configured grading scale. Without it, no grade can be meaningfully interpreted.
+Independent Test: Can be tested in isolation by navigating to the grade-scale management area, entering a set of score boundaries and their corresponding letter grades, saving them, and confirming that the stored mappings are retrieved accurately on a subsequent lookup.
+Acceptance Scenarios:
+1.	Given no grade scale exists for a school term, When the administrator enters score boundaries (e.g., 90–100 → A, 80–89 → B, …) and submits, Then the system stores each boundary-to-letter mapping and confirms success.
+2.	Given an existing grade scale, When the administrator modifies a boundary and saves, Then the old mapping is preserved in history and the new mapping becomes active for subsequent grade calculations.
+3.	Given a grade scale with overlapping boundaries, When the administrator attempts to save, Then the system rejects the submission and displays a clear validation message identifying the conflict.
+4.	Given an active grade scale, when a grade record already references it, Then the system prevents deletion of that scale and informs the administrator.
+User Story 2 – Teacher Records Exam Results for a Course (Priority: P1)
+A teacher enters or updates individual student scores for an exam within a specific course and reporting period. The system validates, stores, and audits every entry.
+Why this priority: Grade entry is the most frequent operation in the results domain. Correctness, auditability, and immutability of each entry are foundational requirements for report-card generation and academic records.
+Independent Test: Can be tested by having a teacher select a course, choose an exam, enter a numeric score for one student, submit, and then verify the stored record contains the correct score, audit fields, and the teacher's identity.
+Acceptance Scenarios:
+1.	Given a teacher is assigned to a course, when they submit a valid numeric score (e.g., 78.50) for an enrolled student, Then the system stores the result with created_at, created_by, and updated_at audit fields populated correctly.
+2.	Given a teacher submits a score outside the valid range (e.g., −5 or 105),When the form is submitted, Then the system rejects the entry and reports the valid range to the teacher.
+3.	Given an existing exam result, When the teacher submits a corrected score,Then the original record is not deleted or overwritten; a new record is created that references the original via a correction link, and the new record becomes the active result.
+4.	Given a student is not enrolled in a course, When a teacher attempts to record a result for that student in that course, Then the system rejects the entry with a clear message.
+User Story 3 – System Calculates Grade Aggregates (Priority: P2)
+The system automatically derives per-student averages, class averages, and rankings for a course and reporting period, making these aggregates available to teachers and administrators without manual computation.
+Why this priority: Aggregates are consumed directly by report-card generation and academic dashboards. They must be consistent and reproducible across all consumers of the data.
+Independent Test: Can be tested by entering a known set of scores for a class, triggering aggregate recalculation, and confirming the outputs (individual averages, class mean, student rank) match the expected values from manual calculation.
+Acceptance Scenarios:
+1.	Given a full set of exam results for a course and period, When aggregates are requested, Then the system returns each student's weighted average, the class mean, and each student's rank within the class — all matching expected values within a tolerance of ±0.01.
+2.	Given one or more students have no recorded result for an exam, When aggregates are computed, Then the system applies the configured missing-score policy (default: exclude from ranking, flag as incomplete) without crashing or producing silent incorrect results.
+3.	Given a grade correction has been recorded, When aggregates are recalculated, Then only the most recent active result for each student issued; superseded records do not contribute to the aggregate.
+
+User Story 4 – Administrator Generates a Student Report Card (Priority: P2)
+An administrator initiates report-card generation for a student and reporting period. The system assembles all relevant grades and aggregates into a structured report card record that can be reviewed, approved, and distributed.
+Why this priority: Report cards are the primary deliverable of the results domain. They are official documents requiring determinism, approval workflow, and immutability once issued.
+Independent Test: Can be tested by seeding a complete set of grades for a student across all enrolled courses for one reporting period, generating the report card, and verifying the output data matches the seeded grades and derived aggregates exactly.
+Acceptance Scenarios:
+1.	Given all grades for a student and period are recorded, When an administrator initiates generation, Then the system creates a report-card record in DRAFT status containing every course result and aggregate, with generated timestamp and generated_by identity.
+2.	Given a report card in DRAFT status, When an administrator approves it, Then the status transitions to APPROVED and the record becomes immutable.
+3.	Given an APPROVED report card exists, When a teacher submits a grade correction for that student and period, Then the report card's status automatically reverts to DRAFT and the administrator is notified.
+4.	Given a report card is regenerated for the same student and period, Then the output is identical to the previous generation if no underlying grades have changed (idempotency).
+5.	Given a student has incomplete grades (some courses missing results), When generation is attempted, Then the system warns the administrator of the incomplete courses but allows generation to proceed with those courses flagged.
+User Story 5 – Database Lead Applies a Schema Migration (Priority: P1)
+A developer on the database team applies a new Flyway migration script to introduce or alter a table in the schema. The migration executes cleanly, the ERD is updated, and downstream JPA entities continue to pass all tests.
+Why this priority: Schema evolution is a continuous activity. A clean, repeatable migration workflow prevents environment drift and is the gating step before any new data feature can be developed or tested.
+Independent Test: Can be tested by applying a new migration script against a clean database instance and verifying: the target table structure matches the script, no prior migration checksums are invalidated, and all existing JPA entity tests pass.
+Acceptance Scenarios:
+1.	Given a new V{n}__description.sql migration file, When Flyway runs on a clean schema, Then all migrations apply in order without errors and flyway_schema_history records each migration with status SUCCESS.
+2.	Given a previously applied migration, When an attempt is made to modify the script file, Then Flyway detects the checksum mismatch on the next run and halts with an error, preventing silent schema drift.
+3.	Given a migration adds a new column with a NOT NULL constraint, When the migration runs against a table that already contains rows, Then the migration either includes a default value or a data-backfill step — the migration MUST NOT leave the database in an inconsistent state.
+Edge Cases
+•	What happens when a reporting period is closed and a teacher attempts to submit new results? The system MUST reject the submission and display the period's close date.
+•	What happens if the grade-scale table contains no entry for a computed numeric score? The system MUST flag the result as UNGRADED rather than returning null or crashing.
+•	How does the system handle a student enrolled in the same course twice (e.g., repeat year)? Each enrollment instance MUST be treated as a distinct record tied to a specific academic year and period.
+•	What happens when the materialized view for aggregates is stale? The system MUST expose a refresh mechanism and indicate the last-refreshed timestamp to consumers.
+•	What happens if two administrators trigger report-card generation for the same student and period simultaneously? The system MUST enforce an idempotency check and return the existing draft rather than creating a duplicate.
+
+User Story 4 – Administrator Generates a Student Report Card (Priority: P2)
+An administrator initiates report-card generation for a student and reporting period. The system assembles all relevant grades and aggregates into a structured report card record that can be reviewed, approved, and distributed.
+Why this priority: Report cards are the primary deliverable of the results domain. They are official documents requiring determinism, approval workflow, and immutability once issued.
+Independent Test: Can be tested by seeding a complete set of grades for a student across all enrolled courses for one reporting period, generating the report card, and verifying the output data matches the seeded grades and derived aggregates exactly.
+Acceptance Scenarios:
+1.	Given all grades for a student and period are recorded, When an administrator initiates generation, Then the system creates a report-card record in DRAFT status containing every course result and aggregate, with generated timestamp and generated_by identity.
+2.	Given a report card in DRAFT status, When an administrator approves it, Then the status transitions to APPROVED and the record becomes immutable.
+3.	Given an APPROVED report card exists, When a teacher submits a grade correction for that student and period, Then the report card's status automatically reverts to DRAFT and the administrator is notified.
+4.	Given a report card is regenerated for the same student and period, Then the output is identical to the previous generation if no underlying grades have changed (idempotency).
+5.	Given a student has incomplete grades (some courses missing results), When generation is attempted, Then the system warns the administrator of the incomplete courses but allows generation to proceed with those courses flagged.
+User Story 5 – Database Lead Applies a Schema Migration (Priority: P1)
+A developer on the database team applies a new Flyway migration script to introduce or alter a table in the schema. The migration executes cleanly, the ERD is updated, and downstream JPA entities continue to pass all tests.
+Why this priority: Schema evolution is a continuous activity. A clean, repeatable migration workflow prevents environment drift and is the gating step before any new data feature can be developed or tested.
+Independent Test: Can be tested by applying a new migration script against a clean database instance and verifying: the target table structure matches the script, no prior migration checksums are invalidated, and all existing JPA entity tests pass.
+Acceptance Scenarios:
+1.	Given a new V{n}__description.sql migration file, When Flyway runs on a clean schema, Then all migrations apply in order without errors and flyway_schema_history records each migration with status SUCCESS.
+2.	Given a previously applied migration, When an attempt is made to modify the script file, Then Flyway detects the checksum mismatch on the next run and halts with an error, preventing silent schema drift.
+3.	Given a migration adds a new column with a NOT NULL constraint, When the migration runs against a table that already contains rows, Then the migration either includes a default value or a data-backfill step — the migration MUST NOT leave the database in an inconsistent state.
+Edge Cases
+•	What happens when a reporting period is closed and a teacher attempts to submit new results? The system MUST reject the submission and display the period's close date.
+•	What happens if the grade-scale table contains no entry for a computed numeric score? The system MUST flag the result as UNGRADED rather than returning null or crashing.
+•	How does the system handle a student enrolled in the same course twice (e.g., repeat year)? Each enrollment instance MUST be treated as a distinct record tied to a specific academic year and period.
+•	What happens when the materialized view for aggregates is stale? The system MUST expose a refresh mechanism and indicate the last-refreshed timestamp to consumers.
+•	What happens if two administrators trigger report-card generation for the same student and period simultaneously? The system MUST enforce an idempotency check and return the existing draft rather than creating a duplicate.
+
+
+
+
+
+
+Requirements (mandatory)
+Functional Requirements
+Schema & Migrations
+•	FR-001: The system MUST manage all schema changes through versioned, sequentially numbered migration scripts; direct DDL execution against any environment database is forbidden.
+•	FR-002: Every table MUST have a surrogate primary key; foreign-key constraints MUST be enforced at the database level.
+•	FR-003: Nullable columns MUST be explicitly declared; all other columns default to NOT NULL.
+•	FR-004: The system MUST maintain a flyway_schema_history (or equivalent) table and reject any run where a previously applied script's checksum has changed.
+Grade Scale
+•	FR-005: The system MUST store grading boundaries and letter-grade mappings in a dedicated reference table (grade_scale); no boundary logic may be hard-coded in application code.
+•	FR-006: The system MUST validate that grade-scale boundaries are non-overlapping and contiguous before persisting.
+•	FR-007: The system MUST prevent deletion of a grade-scale entry that is referenced by existing grade records.
+Grade & Exam Result Recording
+•	FR-008: The system MUST store raw numeric scores as fixed-precision decimals(minimum two decimal places); floating-point types are not permitted for score columns.
+•	FR-009: Every grade and exam-result record MUST carry created_at,updated_at, and created_by fields, populated automatically by the persistence layer.
+•	FR-010: Grade corrections MUST be recorded as new rows linked to the original via a supersedes_id reference; original records MUST NOT be deleted or updated.
+•	FR-011: The system MUST reject score submissions for students not enrolled in the target course for the target period.
+•	FR-012: The system MUST reject score submissions for closed reporting periods.
+Aggregation
+•	FR-013: Per-student averages, class averages, and student rankings MUST be derived from database-level views or materialized views; application-layer-implementation of the same arithmetic is forbidden.
+•	FR-014: When computing aggregates, the system MUST use only the most recent active (non-superseded) result for each student-course-exam combination.
+•	FR-015: The system MUST expose the last-refreshed timestamp for any materialized view and provide an explicit refresh trigger.
+Report Cards
+•	FR-016: Report-card generation MUST be deterministic: running generation for the same student and reporting period with unchanged underlying grades MUST produce an identical output.
+•	FR-017: Generated report cards MUST be persisted as database records with generated_at and generated_by metadata.
+•	FR-018: A report card MUST transition from APPROVED back to DRAFT automatically when any underlying grade for that student and period is corrected after approval.
+•	FR-019: The rendering layer MUST receive report-card data exclusively through a defined data-transfer object; it MUST NOT execute database queries directly.
+•	FR-020: The system MUST support generation of report cards for students within complete results, flagging missing-result courses without aborting generation.
+JPA Entities
+•	FR-021: Every database table MUST have a corresponding JPA entity with explicit column mappings; implicit defaults for column name, nullability, or length are not permitted.
+•	FR-022: All JPA relationships MUST default to lazy fetching; eager fetching requires documented justification.
+•	FR-023: JPA entities MUST implement equals() and hashCode() based on the natural business key.
+Database Quality
+•	FR-024: Every foreign-key column MUST have a database index.
+•	FR-025: Integration tests for the results domain MUST run against a real PostgreSQL instance; in-memory database substitutes are not permitted.
+•	FR-026: Code coverage for repository and service layers in the results domain MUST not fall below 80%.
+Key Entities
+•	Student: A person enrolled in the institution; identified by student number and linked to enrollments.
+•	Teacher: A staff member who delivers courses and records grades; linked to course assignments.
+•	Course: An academic unit offered in a specific academic year and term; associated with a teacher and a set of enrolled students.
+•	Enrollment: The relationship between a Student and a Course for a specific academic period; carr+ies enrollment status.
+•	Grade Scale: A reference table defining score boundaries and their corresponding letter grades; scoped to a school or institution.
+•	Exam Result: A single score record for a student in a specific exam within a course; carries audit fields and an optional reference to the record it supersedes.
+•	Grade: The resolved letter grade derived from an Exam Result via the active Grade Scale; linked to the Exam Result and the Grade Scale entry used.
+•	Reporting Period: A named academic interval (e.g., Semester 1, Term 2) with defined open/close dates for grade submission.
+•	Report Card: A generated, versioned summary of a student's grades and aggregates for one Reporting Period; carries status (DRAFT / APPROVED) and generation metadata.
+Success Criteria (mandatory)
+Measurable Outcomes
+•	SC-001: All schema changes are applied exclusively through migration scripts; zero instances of direct DDL outside of migration files are found in any environment across the project lifetime.
+•	SC-002: Grade entry for a single student-exam combination completes and is confirmed to the teacher within 3 seconds under normal load.
+•	SC-003: Aggregate recalculation for a full class of up to 200 students across10 exams completes within 5 seconds.
+•	SC-004: Report-card generation for a single student and period completes within10 seconds, including all grade lookups and aggregate derivation.
+•	SC-005: 100% of grade correction submissions are recorded as new immutable rows; no original grade record is modified or deleted over the life of the system.
+•	SC-006: Report-card output for the same student, period, and unchanged grades is byte-for-byte equivalent across repeated generation calls (idempotency verified by automated test).
+•	SC-007: Integration test suite passes against a fresh PostgreSQL instance with no pre-existing data in under 5 minutes.
+•	SC-008: Code coverage for the repository and service layers stays at or above80% as measured in the CI pipeline after every merge.
+•	SC-009: The ERD is reviewed and updated within the same PR as every schema migration; no migration is merged without an accompanying ERD update.
+Assumptions
+•	The system is built as a Spring Boot application using Spring Data JPA with Hibernate; the ORM and persistence framework are not in scope for this specification to decide, as they are fixed by the team constitution.
+•	PostgreSQL 15+ is the only supported database; no portability to other RDBMS is required.
+•	Flyway is the migration tool; migration files follow the V{n}__{description}.SQL naming convention.
+•	A single institution (school) is in scope for v1; multi-tenancy is out of scope.
+•	Authentication and user identity management are handled by a separate team member’s module; this specification assumes that an authenticated user context (with role and identity) is available to the persistence layer at the time of any write operation.
+•	A "reporting period" maps to a semester or term as defined by the school's academic calendar; the calendar management itself is out of scope for this member's domain.
+•	The rendering of report cards to PDF or HTML is out of scope for this specification; this domain provides only the structured data (DTO) consumed by the rendering layer.
+•	Test containers are available in the CI environment; network-isolated PostgreSQL container startup is expected to take no more than 60 seconds.
+
+
+
+
+
+What This Module Does
+This module owns the Database & Results domain of the School Management Portal. It provides:
+•	Schema management via versioned Flyway migrations (PostgreSQL 15+)
+•	Grade scale configuration — score-boundary-to-letter-grade reference tables
+•	Exam result recording — append-only, immutable, fully audited score entries
+•	Grade resolution — mapping raw scores to letter grades via the active scale
+•	Aggregate computation — per-student averages and class rankings via PostgreSQL materialized views
+•	Report card generation — deterministic, per-student, per-period summaries with DRAFT/APPROVED lifecycle
+Authentication, PDF/HTML rendering, and academic calendar management are owned by separate modules.
+
+Quick Start
+Prerequisites: Java 21, Maven 3.9+, Docker 24+
+# 1. Start local PostgreSQL
+docker compose up -d db
+
+# 2. Run the application (Flyway migrations run automatically)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+# → Application starts on http://localhost:8080
+
+# 3. Run full test suite (requires Docker running)
+./mvnw verify
+
+Technology Stack
+	
+Language	Java 21 
+Framework	Spring Boot 3.x
+ORM	Spring Data JPA / Hibernate 6.x
+Database	PostgreSQL 15+
+Migrations	Flyway 10.x
+DTO Mapping	MapStruct (compile-time)
+Testing	JUnit 5 + Mockito + Testcontainers
+
+Project Structure
+src/main/java/com/school/portal/
+├── controller/          # REST endpoints
+├── service/             # Business logic + transaction boundaries
+├── repository/          # Spring Data JPA interfaces + native queries
+├── domain/
+│   ├── entity/          # JPA entities (11 classes)
+│   └── enums/           # EnrollmentStatus, ReportCardStatus
+├── dto/                 # DTOs + MapStruct mappers
+└── exception/           # Domain exceptions + GlobalExceptionHandler
+
+src/main/resources/db/migration/
+├── V1__create_core_tables.sql
+├── V2__create_grade_scale_tables.sql
+├── V3__create_exam_results.sql
+├── V4__create_grades.sql
+├── V5__create_report_cards.sql
+├── V6__add_sort_priority_to_grade_scale_entries.sql
+├── R__create_views.sql      # v_active_exam_results, mv_course_aggregates, v_student_period_summary
+└── R__create_triggers.sql   # trg_revert_report_card_on_correction
+
+
+
+
+REST API Summary
+Method	Path	Description
+GET	/api/v1/grade-scales	List active grade scales
+POST	/api/v1/grade-scales	Create grade scale (ADMIN)
+DELETE	/api/v1/grade-scales/{id}	Delete grade scale (ADMIN)
+POST	/api/v1/results	Submit exam result
+POST	/api/v1/results/{id}/correct	Submit grade correction
+GET	/api/v1/results	Query active results (paginated)
+GET	/api/v1/results/aggregates	Get class aggregates
+POST	/api/v1/results/aggregates/refresh	Refresh materialized view (ADMIN)
+POST	/api/v1/report-cards/generate	Generate report card (idempotent)
+POST	/api/v1/report-cards/{id}/approve	Approve report card
+GET	/api/v1/report-cards/{id}	Get report card by ID
+GET	/api/v1/report-cards	List report cards (paginated)
+
+Key Design Invariants
+1.	No floating-point scores — all score columns are NUMERIC(5,2)
+2.	Exam results are immutable — corrections create new rows via supersedes_id; originals are never modified
+3.	Aggregates come from the DB — mv_course_aggregates materialized view; no application-layer re-computation
+4.	Report cards use DTOs only — the rendering layer receives ReportCardDTO; it never queries the database
+5.	No H2 in tests — all integration tests use real PostgreSQL via Testcontainers
+6.	All FK columns are indexed
+7.	Never edit a committed V__ migration — create a new V{n+1} instead
+
+Data Model
+ 
+
+
+
+
+
+
+
+Report Card Lifecycle
+ 
+
+
+
+Testing
+Test type	Technology	DB
+Entity constraint unit tests	JUnit 5	None
+Repository integration	@DataJpaTest + Testcontainers	Real PostgreSQL
+Service unit	JUnit 5 + Mockito	Mocked
+Service integration	@SpringBootTest + Testcontainers	Real PostgreSQL
+Controller integration	@SpringBootTest + Testcontainers	Real PostgreSQL
+Coverage requirement: repository and service layers ≥ 80% (enforced in CI).
+
+
+
+
+
+
+
+Schema Migration Workflow
+1.	Write V{n+1}__description.sql under src/main/resources/db/migration/
+2.	Test against clean Docker DB: docker compose up -d db → ./mvnw flyway:migrate
+3.	Regenerate ERD (see docs/erd/v1/migration-runbook.md)
+4.	Update JPA entity for the new column
+5.	Run ./mvnw verify — all tests must pass, coverage ≥ 80%
+6.	Open PR including migration + ERD diff + entity update
+
+Documentation
+Detailed documentation is available in docs/summary/:
+File	Content
+index.md	Navigation guide for this documentation set
+architecture.md	Layered architecture, key design decisions
+components.md	All classes, their responsibilities, and key methods
+interfaces.md	REST API contracts with full request/response shapes
+data_models.md	All tables, views, triggers, constraints
+workflows.md	End-to-end flows with sequence diagrams
+dependencies.md	Libraries and rationale
+PlantUML diagram sources: docs/plantuml/ERD and migration runbook: docs/erd/v1/Feature specification: specs/001-database-results-baseline/
+
+  
+
+
+
+
+
+Requirements (mandatory)
+Functional Requirements
+Schema & Migrations
+•	FR-001: The system MUST manage all schema changes through versioned, sequentially numbered migration scripts; direct DDL execution against any environment database is forbidden.
+•	FR-002: Every table MUST have a surrogate primary key; foreign-key constraints MUST be enforced at the database level.
+•	FR-003: Nullable columns MUST be explicitly declared; all other columns default to NOT NULL.
+•	FR-004: The system MUST maintain a flyway_schema_history (or equivalent) table and reject any run where a previously applied script's checksum has changed.
+Grade Scale
+•	FR-005: The system MUST store grading boundaries and letter-grade mappings in a dedicated reference table (grade_scale); no boundary logic may be hard-coded in application code.
+•	FR-006: The system MUST validate that grade-scale boundaries are non-overlapping and contiguous before persisting.
+•	FR-007: The system MUST prevent deletion of a grade-scale entry that is referenced by existing grade records.
+Grade & Exam Result Recording
+•	FR-008: The system MUST store raw numeric scores as fixed-precision decimals(minimum two decimal places); floating-point types are not permitted for score columns.
+•	FR-009: Every grade and exam-result record MUST carry created_at,updated_at, and created_by fields, populated automatically by the persistence layer.
+•	FR-010: Grade corrections MUST be recorded as new rows linked to the original via a supersedes_id reference; original records MUST NOT be deleted or updated.
+•	FR-011: The system MUST reject score submissions for students not enrolled in the target course for the target period.
+•	FR-012: The system MUST reject score submissions for closed reporting periods.
+Aggregation
+•	FR-013: Per-student averages, class averages, and student rankings MUST be derived from database-level views or materialized views; application-layer-implementation of the same arithmetic is forbidden.
+•	FR-014: When computing aggregates, the system MUST use only the most recent active (non-superseded) result for each student-course-exam combination.
+•	FR-015: The system MUST expose the last-refreshed timestamp for any materialized view and provide an explicit refresh trigger.
+Report Cards
+•	FR-016: Report-card generation MUST be deterministic: running generation for the same student and reporting period with unchanged underlying grades MUST produce an identical output.
+•	FR-017: Generated report cards MUST be persisted as database records with generated_at and generated_by metadata.
+•	FR-018: A report card MUST transition from APPROVED back to DRAFT automatically when any underlying grade for that student and period is corrected after approval.
+•	FR-019: The rendering layer MUST receive report-card data exclusively through a defined data-transfer object; it MUST NOT execute database queries directly.
+•	FR-020: The system MUST support generation of report cards for students within complete results, flagging missing-result courses without aborting generation.
+JPA Entities
+•	FR-021: Every database table MUST have a corresponding JPA entity with explicit column mappings; implicit defaults for column name, nullability, or length are not permitted.
+•	FR-022: All JPA relationships MUST default to lazy fetching; eager fetching requires documented justification.
+•	FR-023: JPA entities MUST implement equals() and hashCode() based on the natural business key.
+Database Quality
+•	FR-024: Every foreign-key column MUST have a database index.
+•	FR-025: Integration tests for the results domain MUST run against a real PostgreSQL instance; in-memory database substitutes are not permitted.
+•	FR-026: Code coverage for repository and service layers in the results domain MUST not fall below 80%.
+Key Entities
+•	Student: A person enrolled in the institution; identified by student number and linked to enrollments.
+•	Teacher: A staff member who delivers courses and records grades; linked to course assignments.
+•	Course: An academic unit offered in a specific academic year and term; associated with a teacher and a set of enrolled students.
+•	Enrollment: The relationship between a Student and a Course for a specific academic period; carries enrollment status.
+•	Grade Scale: A reference table defining score boundaries and their corresponding letter grades; scoped to a school or institution.
+•	Exam Result: A single score record for a student in a specific exam within a course; carries audit fields and an optional reference to the record it supersedes.
+•	Grade: The resolved letter grade derived from an Exam Result via the active Grade Scale; linked to the Exam Result and the Grade Scale entry used.
+•	Reporting Period: A named academic interval (e.g., Semester 1, Term 2) with defined open/close dates for grade submission.
+•	Report Card: A generated, versioned summary of a student's grades and aggregates for one Reporting Period; carries status (DRAFT / APPROVED) and generation metadata.
+Success Criteria (mandatory)
+Measurable Outcomes
+•	SC-001: All schema changes are applied exclusively through migration scripts; zero instances of direct DDL outside of migration files are found in any environment across the project lifetime.
+•	SC-002: Grade entry for a single student-exam combination completes and is confirmed to the teacher within 3 seconds under normal load.
+•	SC-003: Aggregate recalculation for a full class of up to 200 students across10 exams completes within 5 seconds.
+•	SC-004: Report-card generation for a single student and period completes within10 seconds, including all grade lookups and aggregate derivation.
+•	SC-005: 100% of grade correction submissions are recorded as new immutable rows; no original grade record is modified or deleted over the life of the system.
+•	SC-006: Report-card output for the same student, period, and unchanged grades is byte-for-byte equivalent across repeated generation calls (idempotency verified by automated test).
+•	SC-007: Integration test suite passes against a fresh PostgreSQL instance with no pre-existing data in under 5 minutes.
+•	SC-008: Code coverage for the repository and service layers stays at or above80% as measured in the CI pipeline after every merge.
+•	SC-009: The ERD is reviewed and updated within the same PR as every schema migration; no migration is merged without an accompanying ERD update.
+Assumptions
+•	The system is built as a Spring Boot application using Spring Data JPA with Hibernate; the ORM and persistence framework are not in scope for this specification to decide, as they are fixed by the team constitution.
+•	PostgreSQL 15+ is the only supported database; no portability to other RDBMS is required.
+•	Flyway is the migration tool; migration files follow the V{n}__{description}.SQL naming convention.
+•	A single institution (school) is in scope for v1; multi-tenancy is out of scope.
+•	Authentication and user identity management are handled by a separate team member’s module; this specification assumes that an authenticated user context (with role and identity) is available to the persistence layer at the time of any write operation.
+•	A "reporting period" maps to a semester or term as defined by the school's academic calendar; the calendar management itself is out of scope for this member's domain.
+•	The rendering of report cards to PDF or HTML is out of scope for this specification; this domain provides only the structured data (DTO) consumed by the rendering layer.
+•	Test containers are available in the CI environment; network-isolated PostgreSQL container startup is expected to take no more than 60 seconds.
+
+
+
+
+
+What This Module Does
+This module owns the Database & Results domain of the School Management Portal. It provides:
+•	Schema management via versioned Flyway migrations (PostgreSQL 15+)
+•	Grade scale configuration — score-boundary-to-letter-grade reference tables
+•	Exam result recording — append-only, immutable, fully audited score entries
+•	Grade resolution — mapping raw scores to letter grades via the active scale
+•	Aggregate computation — per-student averages and class rankings via PostgreSQL materialized views
+•	Report card generation — deterministic, per-student, per-period summaries with DRAFT/APPROVED lifecycle
+Authentication, PDF/HTML rendering, and academic calendar management are owned by separate modules.
+
+Quick Start
+Prerequisites: Java 21, Maven 3.9+, Docker 24+
+# 1. Start local PostgreSQL
+docker compose up -d db
+
+# 2. Run the application (Flyway migrations run automatically)
+./mvnw spring-boot:run -Dspring-boot.run.profiles=local
+# → Application starts on http://localhost:8080
+
+# 3. Run full test suite (requires Docker running)
+./mvnw verify
+
+Technology Stack
+	
+Language	Java 21 
+Framework	Spring Boot 3.x
+ORM	Spring Data JPA / Hibernate 6.x
+Database	PostgreSQL 15+
+Migrations	Flyway 10.x
+DTO Mapping	MapStruct (compile-time)
+Testing	JUnit 5 + Mockito + Testcontainers
+
+Project Structure
+src/main/java/com/school/portal/
+├── controller/          # REST endpoints
+├── service/             # Business logic + transaction boundaries
+├── repository/          # Spring Data JPA interfaces + native queries
+├── domain/
+│   ├── entity/          # JPA entities (11 classes)
+│   └── enums/           # EnrollmentStatus, ReportCardStatus
+├── dto/                 # DTOs + MapStruct mappers
+└── exception/           # Domain exceptions + GlobalExceptionHandler
+
+src/main/resources/db/migration/
+├── V1__create_core_tables.sql
+├── V2__create_grade_scale_tables.sql
+├── V3__create_exam_results.sql
+├── V4__create_grades.sql
+├── V5__create_report_cards.sql
+├── V6__add_sort_priority_to_grade_scale_entries.sql
+├── R__create_views.sql      # v_active_exam_results, mv_course_aggregates, v_student_period_summary
+└── R__create_triggers.sql   # trg_revert_report_card_on_correction
+
+
+
+
+REST API Summary
+Method	Path	Description
+GET	/api/v1/grade-scales	List active grade scales
+POST	/api/v1/grade-scales	Create grade scale (ADMIN)
+DELETE	/api/v1/grade-scales/{id}	Delete grade scale (ADMIN)
+POST	/api/v1/results	Submit exam result
+POST	/api/v1/results/{id}/correct	Submit grade correction
+GET	/api/v1/results	Query active results (paginated)
+GET	/api/v1/results/aggregates	Get class aggregates
+POST	/api/v1/results/aggregates/refresh	Refresh materialized view (ADMIN)
+POST	/api/v1/report-cards/generate	Generate report card (idempotent)
+POST	/api/v1/report-cards/{id}/approve	Approve report card
+GET	/api/v1/report-cards/{id}	Get report card by ID
+GET	/api/v1/report-cards	List report cards (paginated)
+
+Key Design Invariants
+1.	No floating-point scores — all score columns are NUMERIC(5,2)
+2.	Exam results are immutable — corrections create new rows via supersedes_id; originals are never modified
+3.	Aggregates come from the DB — mv_course_aggregates materialized view; no application-layer re-computation
+4.	Report cards use DTOs only — the rendering layer receives ReportCardDTO; it never queries the database
+5.	No H2 in tests — all integration tests use real PostgreSQL via Testcontainers
+6.	All FK columns are indexed
+7.	Never edit a committed V__ migration — create a new V{n+1} instead
+
+Data Model
+ 
+
+
+
+
+
+
+
+Report Card Lifecycle
+ 
+
+
+
+Testing
+Test type	Technology	DB
+Entity constraint unit tests	JUnit 5	None
+Repository integration	@DataJpaTest + Testcontainers	Real PostgreSQL
+Service unit	JUnit 5 + Mockito	Mocked
+Service integration	@SpringBootTest + Testcontainers	Real PostgreSQL
+Controller integration	@SpringBootTest + Testcontainers	Real PostgreSQL
+Coverage requirement: repository and service layers ≥ 80% (enforced in CI).
+
+
+
+
+
+
+
+Schema Migration Workflow
+1.	Write V{n+1}__description.sql under src/main/resources/db/migration/
+2.	Test against clean Docker DB: docker compose up -d db → ./mvnw flyway:migrate
+3.	Regenerate ERD (see docs/erd/v1/migration-runbook.md)
+4.	Update JPA entity for the new column
+5.	Run ./mvnw verify — all tests must pass, coverage ≥ 80%
+6.	Open PR including migration + ERD diff + entity update
+
+
+
+  
